@@ -7,6 +7,8 @@ NEW_SDK_PATH=${SDK_BASE_PATH}/${SDK_FOLDER_NAME}
 SDK_TMP_PATH=${SDK_BASE_PATH}/tmp
 NEW_SDK_SYSROOT_PATH=${NEW_SDK_PATH}/sysroot
 
+ORIGINAL_DIR=$(pwd) 
+
 rm -rf /home/${USER}/workspace/sdk/*
 
 # Prepare sdk folder
@@ -57,3 +59,6 @@ mv ${SDK_TMP_PATH}/utils-framework/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/us
 
 # Clean tmp/ folder
 rm -rf /home/${USER}/workspace/sdk/tmp
+
+# Back to original folder
+cd ${ORIGINAL_DIR}
