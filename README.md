@@ -33,9 +33,17 @@ This is a script that automatically does:
 	+ Move libraries to a common sdk folder.
 ```
 
+![](./assets/atbuild-sdk.png?raw=true)
+
+![](./assets/atbuild-sdk-tree.png?raw=true)
+
+![](./assets/atbuild-sdk-folder.png?raw=true)
+
 # listdirsize.sh
 ```
-Run this script in bash shell to list all folders size in your current directory.
+Run this script in bash shell in order to list all folders size in your current directory.
 
 Regarding file size we can simply use "ls -a"
 ```
+
+![](./assets/listdirsize.png?raw=true)

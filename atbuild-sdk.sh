@@ -1,21 +1,57 @@
 #!/bin/bash
 
-# what is an SDK?
-#  SDK consists all of necessary things needed for running programs in a specific target device, including:
-#	+ Header files related to libraries: sdk/sysroot/usr/include, include headers of:
-#		- Standard libraries or external 3rd party libraries like libstdc++, libgcc, zlib,...
-#		- All own built static and dynamic libraries.
-#	+ Static and dynamic shared libraries.
-#	+ Utility scripts: sdk/sysroot/scripts, which is used to:
-#		- Setup environment (env.sh) like set env variables, set LD_LIBRARY_PATH, set SYSROOTSDK, do some preparation,...
-#		- Do some utilities like generating binary database,...
-#	+ Common executable files: sdk/sysroot/usr/bin, which needs to run along with every main executable programs.
-#	+ Text file databases: sdk/sysroot/usr/db
-#	+ Consider as a rootfs: sdk/sysroot/
+SDK_FOLDER_NAME="SDK-$(uname -r)-$(date +%Y%m%d%H%M%S%N)"
 
-# This is a script that automatically does:
-# 	+ Clone latest-master-branch repositories.
-#	+ Move (cd) into each repo.
-#	+ Compile necessary static or dynamic shared libraries.
-#	+ Move libraries to a common sdk folder.
+SDK_BASE_PATH=/home/${USER}/workspace/sdk
+NEW_SDK_PATH=${SDK_BASE_PATH}/${SDK_FOLDER_NAME}
+SDK_TMP_PATH=${SDK_BASE_PATH}/tmp
+SDK_SYSROOT_PATH=${SDK_BASE_PATH}/sysroot
 
+rm -rf /home/${USER}/workspace/sdk/*
+
+# Prepare sdk folder
+mkdir -p ${SDK_TMP_PATH}
+mkdir -p ${NEW_SDK_PATH}
+mkdir -p ${SDK_SYSROOT_PATH}/usr/lib
+mkdir -p ${SDK_SYSROOT_PATH}/usr/include
+mkdir -p ${SDK_SYSROOT_PATH}/usr/exec
+
+# Clone necessary repos
+cd ${SDK_TMP_PATH}
+git clone https://github.com/giang-nguyentbk/common-utils.git
+git clone https://github.com/giang-nguyentbk/itc-framework.git
+git clone https://github.com/giang-nguyentbk/utils-framework.git
+
+# First must build single libraries which do not depend on any other libraries
+## Repo common-utils
+cd ${SDK_TMP_PATH}/common-utils
+cd ./sw/make
+make clean
+make
+mv ${SDK_TMP_PATH}/common-utils/sw/bin/lib/* ${SDK_SYSROOT_PATH}/usr/lib
+mv ${SDK_TMP_PATH}/common-utils/sw/bin/include/*.h ${SDK_SYSROOT_PATH}/usr/include
+
+## Repo itc-framework
+cd ${SDK_TMP_PATH}/itc-framework
+cd ./sw/make
+make clean
+make
+mv ${SDK_TMP_PATH}/itc-framework/sw/bin/lib/* ${SDK_SYSROOT_PATH}/usr/lib
+mv ${SDK_TMP_PATH}/itc-framework/sw/bin/include/*.h ${SDK_SYSROOT_PATH}/usr/include
+mv ${SDK_TMP_PATH}/itc-framework/sw/bin/exec/* ${SDK_SYSROOT_PATH}/usr/exec
+
+## Repo utils-framework
+cd ${SDK_TMP_PATH}/utils-framework
+cd ./sw/make
+make clean
+make
+mv ${SDK_TMP_PATH}/utils-framework/sw/bin/lib/* ${SDK_SYSROOT_PATH}/usr/lib
+mv ${SDK_TMP_PATH}/utils-framework/sw/bin/include/*.h ${SDK_SYSROOT_PATH}/usr/include
+
+
+
+# Move all sysroot in /sdk/sysroot to sdk/new-sdk-folder-name/sysroot
+mv ${SDK_SYSROOT_PATH} ${NEW_SDK_PATH}
+
+# Clean tmp/ folder
+rm -rf /home/${USER}/workspace/sdk/tmp
