@@ -5,16 +5,15 @@ SDK_FOLDER_NAME="SDK-$(uname -r)-$(date +%Y%m%d%H%M%S%N)"
 SDK_BASE_PATH=/home/${USER}/workspace/sdk
 NEW_SDK_PATH=${SDK_BASE_PATH}/${SDK_FOLDER_NAME}
 SDK_TMP_PATH=${SDK_BASE_PATH}/tmp
-SDK_SYSROOT_PATH=${SDK_BASE_PATH}/sysroot
+NEW_SDK_SYSROOT_PATH=${NEW_SDK_PATH}/sysroot
 
 rm -rf /home/${USER}/workspace/sdk/*
 
 # Prepare sdk folder
 mkdir -p ${SDK_TMP_PATH}
-mkdir -p ${NEW_SDK_PATH}
-mkdir -p ${SDK_SYSROOT_PATH}/usr/lib
-mkdir -p ${SDK_SYSROOT_PATH}/usr/include
-mkdir -p ${SDK_SYSROOT_PATH}/usr/exec
+mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/lib
+mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/include
+mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/exec
 
 # Clone necessary repos
 cd ${SDK_TMP_PATH}
@@ -25,9 +24,9 @@ git clone https://github.com/giang-nguyentbk/utils-framework.git
 
 # Copy necessary scripts into the new SDK
 cd ${SDK_TMP_PATH}/shellscripts
-cp -rf ${SDK_TMP_PATH}/shellscripts/env.sh ${NEW_SDK_PATH}/sysroot/
-cp -rf ${SDK_TMP_PATH}/shellscripts/unenv.sh ${NEW_SDK_PATH}/sysroot/
-cd ${NEW_SDK_PATH}/sysroot
+cp -rf ${SDK_TMP_PATH}/shellscripts/env.sh ${NEW_SDK_SYSROOT_PATH}
+cp -rf ${SDK_TMP_PATH}/shellscripts/unenv.sh ${NEW_SDK_SYSROOT_PATH}
+cd ${NEW_SDK_SYSROOT_PATH}
 source ./env.sh
 
 # Must build single libraries which do not depend on any other libraries
@@ -36,30 +35,25 @@ cd ${SDK_TMP_PATH}/common-utils
 cd ./sw/make
 make clean
 make
-mv ${SDK_TMP_PATH}/common-utils/sw/bin/lib/* ${SDK_SYSROOT_PATH}/usr/lib
-mv ${SDK_TMP_PATH}/common-utils/sw/bin/include/*.h ${SDK_SYSROOT_PATH}/usr/include
+mv ${SDK_TMP_PATH}/common-utils/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
+mv ${SDK_TMP_PATH}/common-utils/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/include
 
 ## Repo itc-framework
 cd ${SDK_TMP_PATH}/itc-framework
 cd ./sw/make
 make clean
 make
-mv ${SDK_TMP_PATH}/itc-framework/sw/bin/lib/* ${SDK_SYSROOT_PATH}/usr/lib
-mv ${SDK_TMP_PATH}/itc-framework/sw/bin/include/*.h ${SDK_SYSROOT_PATH}/usr/include
-mv ${SDK_TMP_PATH}/itc-framework/sw/bin/exec/* ${SDK_SYSROOT_PATH}/usr/exec
+mv ${SDK_TMP_PATH}/itc-framework/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
+mv ${SDK_TMP_PATH}/itc-framework/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/include
+mv ${SDK_TMP_PATH}/itc-framework/sw/bin/exec/* ${NEW_SDK_SYSROOT_PATH}/usr/exec
 
 ## Repo utils-framework
 cd ${SDK_TMP_PATH}/utils-framework
 cd ./sw/make
 make clean
 make
-mv ${SDK_TMP_PATH}/utils-framework/sw/bin/lib/* ${SDK_SYSROOT_PATH}/usr/lib
-mv ${SDK_TMP_PATH}/utils-framework/sw/bin/include/*.h ${SDK_SYSROOT_PATH}/usr/include
-
-
-
-# Move all sysroot in /sdk/sysroot to sdk/new-sdk-folder-name/sysroot
-mv ${SDK_SYSROOT_PATH} ${NEW_SDK_PATH}
+mv ${SDK_TMP_PATH}/utils-framework/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
+mv ${SDK_TMP_PATH}/utils-framework/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/include
 
 # Clean tmp/ folder
 rm -rf /home/${USER}/workspace/sdk/tmp

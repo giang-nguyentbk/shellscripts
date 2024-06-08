@@ -1,3 +1,3 @@
 #!/bin/bash
-echo $(pwd)
+echo "  EXPORT \t SDKSYSROOT=$(pwd)"
 export SDKSYSROOT="$(pwd)"
