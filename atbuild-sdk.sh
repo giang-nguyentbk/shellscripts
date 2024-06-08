@@ -18,11 +18,19 @@ mkdir -p ${SDK_SYSROOT_PATH}/usr/exec
 
 # Clone necessary repos
 cd ${SDK_TMP_PATH}
+git clone https://github.com/giang-nguyentbk/shellscripts.git
 git clone https://github.com/giang-nguyentbk/common-utils.git
 git clone https://github.com/giang-nguyentbk/itc-framework.git
 git clone https://github.com/giang-nguyentbk/utils-framework.git
 
-# First must build single libraries which do not depend on any other libraries
+# Copy necessary scripts into the new SDK
+cd ${SDK_TMP_PATH}/shellscripts
+cp -rf ${SDK_TMP_PATH}/shellscripts/env.sh ${NEW_SDK_PATH}/sysroot/
+cp -rf ${SDK_TMP_PATH}/shellscripts/unenv.sh ${NEW_SDK_PATH}/sysroot/
+cd ${NEW_SDK_PATH}/sysroot
+source ./env.sh
+
+# Must build single libraries which do not depend on any other libraries
 ## Repo common-utils
 cd ${SDK_TMP_PATH}/common-utils
 cd ./sw/make
