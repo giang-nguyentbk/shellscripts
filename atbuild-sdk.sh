@@ -17,130 +17,91 @@ mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/lib
 mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/include
 mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/exec
 
-# Check if necessary to pull repos, which normally takes much time
-# Repo shellscripts
 LATEST_REMOTE_MASTER_COMMIT_ID="dummy111"
 LATEST_LOCAL_MASTER_COMMIT_ID="dummy222"
 
-if [ -d "${SDK_TMP_PATH}/shellscripts/.git" ]; then
-	echo "Repository shellscripts already exists!"
-	cd ${SDK_TMP_PATH}/shellscripts
-	LATEST_REMOTE_MASTER_COMMIT_ID="$(git ls-remote --heads https://github.com/giang-nguyentbk/shellscripts.git | awk 'NR==1{print $1}')"
-	LATEST_LOCAL_MASTER_COMMIT_ID="$(git rev-list master --first-parent | awk 'NR==1{print $1}')"
-else
-	cd ${SDK_TMP_PATH}
-	git clone https://github.com/giang-nguyentbk/shellscripts.git
-	LATEST_LOCAL_MASTER_COMMIT_ID="dummy111"
-fi
 
-cd ${SDK_TMP_PATH}/shellscripts
-if [[ "$LATEST_REMOTE_MASTER_COMMIT_ID" == "$LATEST_LOCAL_MASTER_COMMIT_ID" && -d "$SDK_TMP_PATH/shellscripts/sw/bin" ]]; then
-    	echo "Repository shellscripts already up-to-date!"
-else
-	git pull --rebase
-fi
+# Usage: retrieve_repo "repo_name" "user_name"
+# Example: retrieve_repo "itc-framework" "giang-nguyentbk"
+retrieve_repo()
+{
+	echo
+	echo "#################################"
+	LATEST_REMOTE_MASTER_COMMIT_ID="dummy111"
+	LATEST_LOCAL_MASTER_COMMIT_ID="dummy222"
 
-# Copy necessary scripts into the new SDK
+	if [ -d "${SDK_TMP_PATH}/$1/.git" ]; then
+		echo "Repository $1 already exists!"
+		cd ${SDK_TMP_PATH}/$1
+		LATEST_REMOTE_MASTER_COMMIT_ID="$(git ls-remote --heads https://github.com/$2/$1.git | grep -E "refs/heads/master" | awk 'NR==1{print $1}')"
+		LATEST_LOCAL_MASTER_COMMIT_ID="$(git rev-list master --first-parent | awk 'NR==1{print $1}')"
+		echo "LATEST_REMOTE_MASTER_COMMIT_ID=$LATEST_REMOTE_MASTER_COMMIT_ID"
+		echo "LATEST_LOCAL_MASTER_COMMIT_ID=$LATEST_LOCAL_MASTER_COMMIT_ID"
+	else
+		cd ${SDK_TMP_PATH}
+		git clone https://github.com/$2/$1.git
+		LATEST_LOCAL_MASTER_COMMIT_ID="dummy111"
+	fi
+
+	cd ${SDK_TMP_PATH}/$1
+	if [ "$LATEST_REMOTE_MASTER_COMMIT_ID" == "$LATEST_LOCAL_MASTER_COMMIT_ID" ]; then
+		echo "Repository $1 already up-to-date!"
+	else
+		# Discard unstaged files in working directory
+		git restore .
+		# Discard an un-pushed commit in local repository
+		git reset --hard HEAD~1
+		# Pull rebase to make git log history linear
+		git pull --rebase
+	fi
+
+	
+}
+
+# Usage: compile_repo "repo_name"
+# Example: compile_repo "itc-framework"
+compile_repo()
+{
+	## Compile
+	cd ${SDK_TMP_PATH}/$1/sw/make
+	make clean
+	make
+	mv ${SDK_TMP_PATH}/$1/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
+	mv ${SDK_TMP_PATH}/$1/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/include
+
+	if [ -d "${SDK_TMP_PATH}/$1/sw/bin/exec" ]; then
+		mv ${SDK_TMP_PATH}/$1/sw/bin/exec/* ${NEW_SDK_SYSROOT_PATH}/usr/exec
+	fi
+}
+
+# Usage: compile_repo
+# Example: compile_repo
+copy_scripts_to_sdk()
+{
+	# Copy necessary scripts into the new SDK
+	echo
+	cp -rf ${SDK_TMP_PATH}/shellscripts/env.sh ${NEW_SDK_SYSROOT_PATH}
+	cp -rf ${SDK_TMP_PATH}/shellscripts/unenv.sh ${NEW_SDK_SYSROOT_PATH}
+	cd ${NEW_SDK_SYSROOT_PATH}
+	source ./env.sh
+}
+
+
+# Main point
 echo
-cp -rf ${SDK_TMP_PATH}/shellscripts/env.sh ${NEW_SDK_SYSROOT_PATH}
-cp -rf ${SDK_TMP_PATH}/shellscripts/unenv.sh ${NEW_SDK_SYSROOT_PATH}
-cd ${NEW_SDK_SYSROOT_PATH}
-source ./env.sh
+echo "Start building SDK for target $(uname -r)..."
 
-# Repo common-utils
-echo
-echo "#################################"
-LATEST_REMOTE_MASTER_COMMIT_ID="dummy111"
-LATEST_LOCAL_MASTER_COMMIT_ID="dummy222"
+retrieve_repo shellscripts giang-nguyentbk
+copy_scripts_to_sdk
 
-if [ -d "${SDK_TMP_PATH}/common-utils/.git" ]; then
-	echo "Repository common-utils already exists!"
-	cd ${SDK_TMP_PATH}/common-utils
-	LATEST_REMOTE_MASTER_COMMIT_ID="$(git ls-remote --heads https://github.com/giang-nguyentbk/common-utils.git | awk 'NR==1{print $1}')"
-	LATEST_LOCAL_MASTER_COMMIT_ID="$(git rev-list master --first-parent | awk 'NR==1{print $1}')"
-else
-	cd ${SDK_TMP_PATH}
-	git clone https://github.com/giang-nguyentbk/common-utils.git
-	LATEST_LOCAL_MASTER_COMMIT_ID="dummy111"
-fi
+retrieve_repo common-utils giang-nguyentbk
+compile_repo common-utils
 
-cd ${SDK_TMP_PATH}/common-utils
-if [[ "$LATEST_REMOTE_MASTER_COMMIT_ID" == "$LATEST_LOCAL_MASTER_COMMIT_ID" && -d "$SDK_TMP_PATH/common-utils/sw/bin" ]]; then
-    	echo "Repository common-utils already up-to-date!"
-else
-    	git pull --rebase
-fi
+retrieve_repo itc-framework giang-nguyentbk
+compile_repo itc-framework
 
-# Must build single libraries which do not depend on any other libraries
-## Repo common-utils
-cd ./sw/make
-make clean
-make
-mv ${SDK_TMP_PATH}/common-utils/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
-mv ${SDK_TMP_PATH}/common-utils/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/include
-
-# Repo itc-framework
-echo
-echo "#################################"
-LATEST_REMOTE_MASTER_COMMIT_ID="dummy111"
-LATEST_LOCAL_MASTER_COMMIT_ID="dummy222"
-
-if [ -d "${SDK_TMP_PATH}/itc-framework/.git" ]; then
-	echo "Repository itc-framework already exists!"
-	cd ${SDK_TMP_PATH}/itc-framework
-	LATEST_REMOTE_MASTER_COMMIT_ID="$(git ls-remote --heads https://github.com/giang-nguyentbk/itc-framework.git | awk 'NR==1{print $1}')"
-	LATEST_LOCAL_MASTER_COMMIT_ID="$(git rev-list master --first-parent | awk 'NR==1{print $1}')"
-else
-	cd ${SDK_TMP_PATH}
-	git clone https://github.com/giang-nguyentbk/itc-framework.git
-	LATEST_LOCAL_MASTER_COMMIT_ID="dummy111"
-fi
-
-cd ${SDK_TMP_PATH}/itc-framework
-if [[ "$LATEST_REMOTE_MASTER_COMMIT_ID" == "$LATEST_LOCAL_MASTER_COMMIT_ID" && -d "$SDK_TMP_PATH/itc-framework/sw/bin" ]]; then
-    	echo "Repository itc-framework already up-to-date!"
-else
-    	git pull --rebase
-fi
-
-## Repo itc-framework
-cd ./sw/make
-make clean
-make
-mv ${SDK_TMP_PATH}/itc-framework/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
-mv ${SDK_TMP_PATH}/itc-framework/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/include
-mv ${SDK_TMP_PATH}/itc-framework/sw/bin/exec/* ${NEW_SDK_SYSROOT_PATH}/usr/exec
-
-# Repo utils-framework
-echo
-echo "#################################"
-LATEST_REMOTE_MASTER_COMMIT_ID="dummy111"
-LATEST_LOCAL_MASTER_COMMIT_ID="dummy222"
-
-if [ -d "${SDK_TMP_PATH}/utils-framework/.git" ]; then
-	echo "Repository utils-framework already exists!"
-	cd ${SDK_TMP_PATH}/utils-framework
-	LATEST_REMOTE_MASTER_COMMIT_ID="$(git ls-remote --heads https://github.com/giang-nguyentbk/utils-framework.git | awk 'NR==1{print $1}')"
-	LATEST_LOCAL_MASTER_COMMIT_ID="$(git rev-list master --first-parent | awk 'NR==1{print $1}')"
-else
-	cd ${SDK_TMP_PATH}
-	git clone https://github.com/giang-nguyentbk/utils-framework.git
-	LATEST_LOCAL_MASTER_COMMIT_ID="dummy111"
-fi
-
-cd ${SDK_TMP_PATH}/utils-framework
-if [[ "$LATEST_REMOTE_MASTER_COMMIT_ID" == "$LATEST_LOCAL_MASTER_COMMIT_ID" && -d "$SDK_TMP_PATH/utils-framework/sw/bin" ]]; then
-    	echo "Repository utils-framework already up-to-date!"
-else
-    	git pull --rebase	
-fi
-
-## Repo utils-framework
-cd ./sw/make
-make clean
-make
-mv ${SDK_TMP_PATH}/utils-framework/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
-mv ${SDK_TMP_PATH}/utils-framework/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/include
+retrieve_repo utils-framework giang-nguyentbk
+compile_repo itc-framework
 
 echo
 echo "#################################"
