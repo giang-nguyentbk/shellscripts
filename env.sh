@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPTPATH="$(readlink -f $1 | xargs dirname)"
+SCRIPTPATH="$(readlink -f ${BASH_SOURCE[0]} | xargs dirname)"
 echo $SCRIPTPATH
 
 echo "Exporting  SDKSYSROOT=$SCRIPTPATH"
