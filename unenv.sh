@@ -1,10 +1,7 @@
 #!/bin/bash
 
-echo "Restoring  LD_LIBRARY_PATH=\$ORIGINAL_LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$ORIGINAL_LD_LIBRARY_PATH"
-
-echo "Deleting  ORIGINAL_LD_LIBRARY_PATH"
-export -n ORIGINAL_LD_LIBRARY_PATH
+echo "Deleting  LD_LIBRARY_PATH"
+export -n LD_LIBRARY_PATH
 
 echo "Deleting  SDKSYSROOT=$SDKSYSROOT"
 export -n SDKSYSROOT
