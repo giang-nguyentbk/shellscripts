@@ -41,12 +41,15 @@ else
 fi
 
 # Copy necessary scripts into the new SDK
+echo
 cp -rf ${SDK_TMP_PATH}/shellscripts/env.sh ${NEW_SDK_SYSROOT_PATH}
 cp -rf ${SDK_TMP_PATH}/shellscripts/unenv.sh ${NEW_SDK_SYSROOT_PATH}
 cd ${NEW_SDK_SYSROOT_PATH}
 source ./env.sh
 
 # Repo common-utils
+echo
+echo "#################################"
 LATEST_REMOTE_MASTER_COMMIT_ID="dummy111"
 LATEST_LOCAL_MASTER_COMMIT_ID="dummy222"
 
@@ -77,6 +80,8 @@ mv ${SDK_TMP_PATH}/common-utils/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
 mv ${SDK_TMP_PATH}/common-utils/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/include
 
 # Repo itc-framework
+echo
+echo "#################################"
 LATEST_REMOTE_MASTER_COMMIT_ID="dummy111"
 LATEST_LOCAL_MASTER_COMMIT_ID="dummy222"
 
@@ -107,6 +112,8 @@ mv ${SDK_TMP_PATH}/itc-framework/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/
 mv ${SDK_TMP_PATH}/itc-framework/sw/bin/exec/* ${NEW_SDK_SYSROOT_PATH}/usr/exec
 
 # Repo utils-framework
+echo
+echo "#################################"
 LATEST_REMOTE_MASTER_COMMIT_ID="dummy111"
 LATEST_LOCAL_MASTER_COMMIT_ID="dummy222"
 
@@ -135,8 +142,10 @@ make
 mv ${SDK_TMP_PATH}/utils-framework/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
 mv ${SDK_TMP_PATH}/utils-framework/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/include
 
-
-
+echo
+echo "#################################"
+echo
+echo "SDK built successfully can be found at $NEW_SDK_PATH [OK]"
 
 # Back to original folder
 cd ${ORIGINAL_DIR}
