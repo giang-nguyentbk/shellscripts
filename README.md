@@ -33,7 +33,14 @@ This is a script that automatically does:
 	+ Move libraries to a common sdk folder.
 ```
 
+```bash
+# Usage
+$ source ./atbuild-sdk.sh
+```
+
 ![](./assets/atbuild-sdk.png?raw=true)
+
+![](./assets/atbuild-sdk-1.png?raw=true)
 
 ![](./assets/atbuild-sdk-tree.png?raw=true)
 
