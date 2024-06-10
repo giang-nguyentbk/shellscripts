@@ -1,21 +1,21 @@
 #!/bin/bash
 
-SDK_FOLDER_NAME="SDK-$(uname -r)-$(date +%Y%m%d%H%M%S%N)"
+# Usage:
+# 	1. Build SDK from latest repositories
+#	$ source ./atbuild-sdk.sh --build-sdk
+#
+#	2. Compile a local repository and install libraries, headers and executables into SDK which is used for local code change testing
+#	$ source ./atbuild.sh --local-install <path-to-sdk-to-install-local-libraries>
+#
+#
+# Note that: for convenient usage, you can alias "source <path-to-atbuild-sdk-script>/atbuild.sh" to something like "autobuild"
+
+
 
 SDK_BASE_PATH=/home/${USER}/workspace/sdk
-NEW_SDK_PATH=${SDK_BASE_PATH}/${SDK_FOLDER_NAME}
 SDK_TMP_PATH=${SDK_BASE_PATH}/tmp
-NEW_SDK_SYSROOT_PATH=${NEW_SDK_PATH}/sysroot
 
-ORIGINAL_DIR=$(pwd) 
-
-rm -rf /home/${USER}/workspace/sdk/SDK-*
-
-# Prepare sdk folder
-mkdir -p ${SDK_TMP_PATH}
-mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/lib
-mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/include
-mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/exec
+ORIGINAL_DIR=$(pwd)
 
 LATEST_REMOTE_MASTER_COMMIT_ID="dummy111"
 LATEST_LOCAL_MASTER_COMMIT_ID="dummy222"
@@ -47,9 +47,9 @@ retrieve_repo()
 	if [ "$LATEST_REMOTE_MASTER_COMMIT_ID" == "$LATEST_LOCAL_MASTER_COMMIT_ID" ]; then
 		echo "Repository $1 already up-to-date!"
 	else
-		# Discard unstaged files in working directory
-		git restore .
-		# Discard an un-pushed commit in local repository
+		# Discard untracked files in working directory
+		git clean -xfd
+		# Discard an un-pushed commit in local repository and unstaged changes in working directory
 		git reset --hard HEAD~1
 		# Pull rebase to make git log history linear
 		git pull --rebase
@@ -86,27 +86,123 @@ copy_scripts_to_sdk()
 	source ./env.sh
 }
 
+do_build_sdk()
+{
+	echo
+	echo "Start building SDK for target $(uname -r)..."
+
+	# Define variables
+	SDK_FOLDER_NAME="SDK-$(uname -r)-$(date +%Y%m%d%H%M%S%N)"
+	NEW_SDK_PATH=${SDK_BASE_PATH}/${SDK_FOLDER_NAME}
+	NEW_SDK_SYSROOT_PATH=${NEW_SDK_PATH}/sysroot
+
+	# Remove old SDK
+	rm -rf /home/${USER}/workspace/sdk/SDK-*
+
+	# Prepare sdk folder
+	mkdir -p ${SDK_TMP_PATH}
+	mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/lib
+	mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/include
+	mkdir -p ${NEW_SDK_SYSROOT_PATH}/usr/exec
+
+	retrieve_repo shellscripts giang-nguyentbk
+	copy_scripts_to_sdk
+
+	retrieve_repo common-utils giang-nguyentbk
+	compile_repo common-utils
+
+	retrieve_repo itc-framework giang-nguyentbk
+	compile_repo itc-framework
+
+	retrieve_repo utils-framework giang-nguyentbk
+	compile_repo itc-framework
+
+	echo
+	echo "#################################"
+	echo
+	echo "SDK built successfully can be found at $NEW_SDK_PATH [OK]"
+}
+
+do_local_install()
+{
+	echo "Start compiling and installing local repository..."
+
+	if [ "x$1" == "x" ]; then
+		echo "Missing path to SDK in order to install local libraries!"
+		return -1
+	fi
+
+	echo "Target SDK location: $1"
+	
+	if [ -d "${ORIGINAL_DIR}/sw/make" ]; then
+		cd ${ORIGINAL_DIR}/sw/make
+		make clean
+		make
+		mv ${ORIGINAL_DIR}/sw/bin/lib/* $1/usr/lib
+		mv ${ORIGINAL_DIR}/sw/bin/include/*.h $1/usr/include
+
+		if [ -d "${ORIGINAL_DIR}/sw/bin/exec" ]; then
+			mv ${ORIGINAL_DIR}/sw/bin/exec/* $1/usr/exec
+		fi
+
+		echo
+		echo "#################################"
+		echo
+		echo "Compiled local libraries successfully! [OK]"
+		echo "Installed local libraries into SDK successfully! [OK]"
+	else
+		echo "Script atbuild-sdk.sh was not running in any repository directory!"
+	fi
+}
+
+do_print_usage()
+{
+	# Display Help
+	echo "Usage: atbuild-sdk.sh"
+	echo "Syntax: source ./atbuild-sdk.sh [ --build-sdk | "
+	echo "                                  --local-install <path-to-SDK-to-install-local-libraries> ]"
+	echo "Options:"
+	echo "--build-sdk		Pull latest repositories if necessary, compile and install its utility scripts, headers, libraries and executables."
+	echo "--local-install		Compile your local repository, install headers, libraries and executables into given SDK in the 2nd argument."
+	echo "               		If SDK is already built, but env variable SDKSYSROOT not exported yet (new bash shell), manually \"source <path-to-SDK>/env.sh\"."
+	echo "               		Remember running this command in your local repo directory!"
+	echo "Pro hints:"
+	echo "1. Try aliasing \"source <path-to-atbuild-sdk-script>/atbuild.sh\" to something like \"atbuild.sh\"!"
+}
 
 # Main point
-echo
-echo "Start building SDK for target $(uname -r)..."
+# Parsing arguments
+while :
+do
+	case $1 in
+		--build-sdk)
+			do_build_sdk
+			shift 1
+			;;
 
-retrieve_repo shellscripts giang-nguyentbk
-copy_scripts_to_sdk
+		--local-install)
+			do_local_install $2
+			shift 2
+			;;
 
-retrieve_repo common-utils giang-nguyentbk
-compile_repo common-utils
+		-h | --help)
+			do_print_usage
+			shift 1
+			;;
 
-retrieve_repo itc-framework giang-nguyentbk
-compile_repo itc-framework
+		# Any options without spaces in the middle
+		*[!\ ]*)
+			echo "Error: Unknown option: \"$1\""
+			do_print_usage
+			shift 1
+			;;
+		*)
+			break
+			;;
+	esac
+done
 
-retrieve_repo utils-framework giang-nguyentbk
-compile_repo itc-framework
 
-echo
-echo "#################################"
-echo
-echo "SDK built successfully can be found at $NEW_SDK_PATH [OK]"
 
 # Back to original folder
 cd ${ORIGINAL_DIR}

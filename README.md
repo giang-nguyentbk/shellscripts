@@ -1,6 +1,6 @@
+# shellscripts
 
-
-# atbuild-sdk.sh
+## atbuild-sdk.sh
 **what is an SDK?**
 ```
 SDK consists all of necessary things needed for running programs in a specific target device, including:
@@ -45,6 +45,10 @@ $ source ./atbuild-sdk.sh
 ![](./assets/atbuild-sdk-tree.png?raw=true)
 
 ![](./assets/atbuild-sdk-folder.png?raw=true)
+
+![](./assets/atbuild-sdk-help.png?raw=true)
+
+![](./assets/atbuild-sdk-local-install.png?raw=true)
 
 # listdirsize.sh
 ```
