@@ -66,10 +66,18 @@ compile_repo()
 	cd ${SDK_TMP_PATH}/$1/sw/make
 	make clean
 	make
-	mv ${SDK_TMP_PATH}/$1/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
-	mv ${SDK_TMP_PATH}/$1/sw/bin/include/*.h ${NEW_SDK_SYSROOT_PATH}/usr/include
+	if [ -d "${SDK_TMP_PATH}/$1/sw/bin/lib" ]; then
+		echo "Copying libraries into SDK..."
+		mv ${SDK_TMP_PATH}/$1/sw/bin/lib/* ${NEW_SDK_SYSROOT_PATH}/usr/lib
+	fi
+
+	if [ -d "${SDK_TMP_PATH}/$1/sw/bin/include" ]; then
+		echo "Copying header files into SDK..."
+		mv ${SDK_TMP_PATH}/$1/sw/bin/include/* ${NEW_SDK_SYSROOT_PATH}/usr/include
+	fi
 
 	if [ -d "${SDK_TMP_PATH}/$1/sw/bin/exec" ]; then
+		echo "Copying executables into SDK..."
 		mv ${SDK_TMP_PATH}/$1/sw/bin/exec/* ${NEW_SDK_SYSROOT_PATH}/usr/exec
 	fi
 }
@@ -115,7 +123,10 @@ do_build_sdk()
 	compile_repo itc-framework
 
 	retrieve_repo utils-framework giang-nguyentbk
-	compile_repo itc-framework
+	compile_repo utils-framework
+
+	retrieve_repo cli-daemon giang-nguyentbk
+	compile_repo cli-daemon
 
 	echo
 	echo "#################################"
@@ -138,10 +149,19 @@ do_local_install()
 		cd ${ORIGINAL_DIR}/sw/make
 		make clean
 		make
-		mv ${ORIGINAL_DIR}/sw/bin/lib/* $1/usr/lib
-		mv ${ORIGINAL_DIR}/sw/bin/include/*.h $1/usr/include
+
+		if [ -d "${ORIGINAL_DIR}/sw/bin/lib" ]; then
+			echo "Copying libraries into SDK..."
+			mv ${ORIGINAL_DIR}/sw/bin/lib/* $1/usr/lib
+		fi
+
+		if [ -d "${ORIGINAL_DIR}/sw/bin/include" ]; then
+			echo "Copying header files into SDK..."
+			mv ${ORIGINAL_DIR}/sw/bin/include/* $1/usr/include
+		fi
 
 		if [ -d "${ORIGINAL_DIR}/sw/bin/exec" ]; then
+			echo "Copying executables into SDK..."
 			mv ${ORIGINAL_DIR}/sw/bin/exec/* $1/usr/exec
 		fi
 
@@ -166,6 +186,8 @@ do_print_usage()
 	echo "--local-install		Compile your local repository, install headers, libraries and executables into given SDK in the 2nd argument."
 	echo "               		If SDK is already built, but env variable SDKSYSROOT not exported yet (new bash shell), manually \"source <path-to-SDK>/env.sh\"."
 	echo "               		Remember running this command in your local repo directory!"
+	echo "-h, --help		Print the usage and detailed description."
+	echo
 	echo "Pro hints:"
 	echo "1. Try aliasing \"source <path-to-atbuild-sdk-script>/atbuild.sh\" to something like \"atbuild.sh\"!"
 }
@@ -194,7 +216,7 @@ do
 		*[!\ ]*)
 			echo "Error: Unknown option: \"$1\""
 			do_print_usage
-			shift 1
+			break
 			;;
 		*)
 			break
