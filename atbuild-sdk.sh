@@ -152,17 +152,17 @@ do_local_install()
 
 		if [ -d "${ORIGINAL_DIR}/sw/bin/lib" ]; then
 			echo "Copying libraries into SDK..."
-			mv ${ORIGINAL_DIR}/sw/bin/lib/* $1/usr/lib
+			mv ${ORIGINAL_DIR}/sw/bin/lib/* $1/sysroot/usr/lib
 		fi
 
 		if [ -d "${ORIGINAL_DIR}/sw/bin/include" ]; then
 			echo "Copying header files into SDK..."
-			mv ${ORIGINAL_DIR}/sw/bin/include/* $1/usr/include
+			mv ${ORIGINAL_DIR}/sw/bin/include/* $1/sysroot/usr/include
 		fi
 
 		if [ -d "${ORIGINAL_DIR}/sw/bin/exec" ]; then
 			echo "Copying executables into SDK..."
-			mv ${ORIGINAL_DIR}/sw/bin/exec/* $1/usr/exec
+			mv ${ORIGINAL_DIR}/sw/bin/exec/* $1/sysroot/usr/exec
 		fi
 
 		echo

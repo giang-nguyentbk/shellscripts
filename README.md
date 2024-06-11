@@ -42,13 +42,13 @@ $ source ./atbuild-sdk.sh
 
 ![](./assets/atbuild-sdk-1.png?raw=true)
 
-![](./assets/atbuild-sdk-tree.png?raw=true)
+![](./assets/atbuild-sdk-local-install.png?raw=true)
 
 ![](./assets/atbuild-sdk-folder.png?raw=true)
 
-![](./assets/atbuild-sdk-help.png?raw=true)
+![](./assets/atbuild-sdk-tree.png?raw=true)
 
-![](./assets/atbuild-sdk-local-install.png?raw=true)
+![](./assets/atbuild-sdk-help.png?raw=true)
 
 # listdirsize.sh
 ```
