@@ -5,7 +5,7 @@
 #	$ source ./atbuild-sdk.sh --build-sdk
 #
 #	2. Compile a local repository and install libraries, headers and executables into SDK which is used for local code change testing
-#	$ source ./atbuild.sh --local-install <path-to-sdk-to-install-local-libraries>
+#	$ source ./atbuild.sh --install-local <path-to-sdk-to-install-local-libraries>
 #
 #
 # Note that: for convenient usage, you can alias "source <path-to-atbuild-sdk-script>/atbuild.sh" to something like "autobuild"
@@ -134,7 +134,7 @@ do_build_sdk()
 	echo "SDK built successfully can be found at $NEW_SDK_PATH [OK]"
 }
 
-do_local_install()
+do_install_local()
 {
 	echo "Start compiling and installing local repository..."
 
@@ -179,11 +179,11 @@ do_print_usage()
 {
 	# Display Help
 	echo "Usage: atbuild-sdk.sh"
-	echo "Syntax: source ./atbuild-sdk.sh [ --build-sdk | "
-	echo "                                  --local-install <path-to-SDK-to-install-local-libraries> ]"
+	echo "Syntax: source ./atbuild-sdk.sh { --build-sdk | "
+	echo "                                  --install-local <path-to-SDK-to-install-local-libraries> }"
 	echo "Options:"
 	echo "--build-sdk		Pull latest repositories if necessary, compile and install its utility scripts, headers, libraries and executables."
-	echo "--local-install		Compile your local repository, install headers, libraries and executables into given SDK in the 2nd argument."
+	echo "--install-local		Compile your local repository, install headers, libraries and executables into given SDK in the 2nd argument."
 	echo "               		If SDK is already built, but env variable SDKSYSROOT not exported yet (new bash shell), manually \"source <path-to-SDK>/env.sh\"."
 	echo "               		Remember running this command in your local repo directory!"
 	echo "-h, --help		Print the usage and detailed description."
@@ -202,8 +202,8 @@ do
 			shift 1
 			;;
 
-		--local-install)
-			do_local_install $2
+		--install-local)
+			do_install_local $2
 			shift 2
 			;;
 
