@@ -150,6 +150,8 @@ do_install_local()
 		make clean
 		make
 
+		cd ${ORIGINAL_DIR}
+
 		if [ -d "${ORIGINAL_DIR}/sw/bin/lib" ]; then
 			echo "Copying libraries into SDK..."
 			mv ${ORIGINAL_DIR}/sw/bin/lib/* $1/sysroot/usr/lib
@@ -200,16 +202,19 @@ do
 		--build-sdk)
 			do_build_sdk
 			shift 1
+			break
 			;;
 
 		--install-local)
 			do_install_local $2
 			shift 2
+			break
 			;;
 
 		-h | --help)
 			do_print_usage
 			shift 1
+			break
 			;;
 
 		# Any options without spaces in the middle
